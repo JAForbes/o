@@ -1,3 +1,4 @@
+//Author: James Forbes - 2014 - MIT Licence
 function o(hash,changeCallback){
 
 
