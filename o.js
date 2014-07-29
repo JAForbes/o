@@ -1,6 +1,7 @@
 //Author: James Forbes - 2014 - MIT Licence
 function o(hash,changeCallback){
 
+	var callbacks = {};
 
 	//route queries to setters//getters
 	function entry(key,value){
@@ -29,7 +30,15 @@ function o(hash,changeCallback){
   		changeCallback && changeCallback(val,key,hash)
   		//create setter
   		entry[key] = attr(key)
+  		entry[key].change = acceptAttrChange(key)
+  		callbacks[key] && callbacks[key](val,key,hash)
   		return entry;
+	}
+
+	function acceptAttrChange(key){
+		return function(changeCallback){
+			callbacks[key] = changeCallback
+		}
 	}
 
 	//iterate through an object
@@ -64,6 +73,8 @@ function o(hash,changeCallback){
 			delete hash[key]
 			delete entry[key]
 			changeCallback(null,key,hash)
+			callbacks[key] && callbacks[key](val,key,hash)
+			delete callbacks[key]
 		}
 		return entry;
 	}
@@ -74,7 +85,7 @@ function o(hash,changeCallback){
 	}
 
 	each(hash,function(val,key){
-      entry[key] = attr(key)
+      set(key,val)
 	});
 
 	return entry;
