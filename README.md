@@ -33,6 +33,11 @@ person.change(function(val,key,hash){
   console.log('I feel good!')
 })
 
+//callback functions for individual attributes
+person.first.change(function(val,key,hash){
+  console.log('My first name changed to',val)
+})
+
 //add a record
 person('middle','Anthony')
 
