@@ -2,7 +2,26 @@
 function o(hash,changeCallback){
 
 	var callbacks = {};
+	var accessors = {};
 
+	var t =  {
+		intro: 'You will not be able to use the automatic function syntax e.g. o.____() to access a record with the key "____".',
+		reasons: {
+			existingFunction: 'There is already a ____() function, and o wouldn\'t know your intentions.',
+			nameReadOnly: 'The accessor is a function and you cannot override function.name in Javascript.',
+		},
+		disadvantages: {
+			nameReadOnly: 'Be aware, you will not be able to use a change listener for this attribute, as '+
+			  'the name property is a string, and strings cannot have custom properties in Javascript'
+		},
+		reassurance: 'Feel free to use the query syntax e.g. o("____") though!',
+		pattern: /____/g
+	}
+	var warnings = {
+		name: [t.intro,t.reasons.nameReadOnly,t.reassurance,t.disadvantages.nameReadOnly],
+		remove: [t.intro,t.reasons.existingFunction,t.reassurance],
+		change: [t.intro,t.reasons.existingFunction,t.reassurance]
+	}
 	/*
 		TODO
 
@@ -20,7 +39,7 @@ function o(hash,changeCallback){
 	//route queries to setters//getters
 	var entry = function (key,value){
 		if(arguments.length != 0){
-			return entry[key](value)
+			return hash(key,value)
 		}
 		return hash();
 	}
@@ -34,16 +53,21 @@ function o(hash,changeCallback){
 
 		return function(key,val){
 			if(arguments.length == 2){
-				if(typeof val == undefined){
+				var valtype = type(val);
+				var hasChanged = val != original[key]
+
+				if(/Undefined|Null/.test(valtype)){
+					
 					delete original[key]
-					delete entry[key].change
+					delete accessors[key]
+					if(entry[key]){ delete entry[key].change }
+
 				} else {
 					
 					original[key] = val
-					entry[key] = createAccessor(key)
-					entry[key].change = acceptAttrChange(key)
+					accessors[key] = accessors[key] || createAccessor(key)
 				}
-				return changed(val,key);
+				return hasChanged && changed(val,key) || entry;
 			} else if (key) {
 				return original[key]
 			} else {
@@ -63,6 +87,7 @@ function o(hash,changeCallback){
 				entry.remove(key)
 			})
 		} else {
+
 			var key = keys;
 			hash(key,null) //delete internal state
 			delete entry[key] //delete accessor function
@@ -104,7 +129,6 @@ function o(hash,changeCallback){
 	function each(obj,iterator){
 	
 		if(isArray(obj)){
-
 			for(var i = 0; i< obj.length; i++){
 				iterator(obj[i],i)
 			}	
@@ -120,14 +144,33 @@ function o(hash,changeCallback){
 		return !!array.concat
 	}
 
+	function type(o){
+		return ({}).toString.call(o).slice(8,-1)
+	}
+
 	//creates an attribute getter/setter
 	function createAccessor(key){
-	  return function(val){
-	  	if(typeof val != 'undefined'){
-	  		return set(key,val)
-	  	}
-      	return hash(key)
-      }
+		var accessor = function(val){
+			if(type(val) != 'Undefined'){
+				return set(key,val)
+			}
+			return hash(key)
+		}
+		automaticFunctionGen(key,accessor)
+		return accessor;
+	}
+
+	function automaticFunctionGen(key,accessor){
+
+		if(!(key in warnings)){ 
+			entry[key] = accessor
+			entry[key].change = acceptAttrChange(key)
+		} else {
+			var warning = warnings[key]
+				.join('\n\n')
+				.replace(t.pattern,key)
+			console.warn(warning)
+		}
 	}
 
 	entry.change = function(onchange){
