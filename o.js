@@ -166,11 +166,15 @@ function o(hash,changeCallback){
 			entry[key] = accessor
 			entry[key].change = acceptAttrChange(key)
 		} else {
-			var warning = warnings[key]
-				.join('\n\n')
-				.replace(t.pattern,key)
-			console.warn(warning)
+			warn(key)
 		}
+	}
+
+	function warn(key){
+		var warning = warnings[key]
+			.join('\n\n')
+			.replace(t.pattern,key)
+		console.warn(warning)
 	}
 
 	entry.change = function(onchange){
