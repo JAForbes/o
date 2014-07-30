@@ -140,19 +140,19 @@ person
 You can attach change callbacks to the root accessor `accessor.change(callback)` or attribute accessors`accessor.attr.change(callback)`.  You will be notified whenever the selected scope changes.
 
 ```javascript
-
 alice = o()
   ('location','wonderland')
   ('head','attached')
   .change(function(val,key,hash){
-    console.log('My ',key,' has changed to',val)
+    console.log('My',key,'has changed to',val)
   })
   .head.change(function(val,key,hash){
-    console.log('My head has changed to',val)
+     if(val==null){
+       console.log('Oh no! My head is gone!')
+     }
   })
   .location('The Queen\'s Court') //triggers only the root change callback
   .remove('head') //triggers the head change and the change callback
-
 ```
 
 You can also attach a change handler on initialization as a second argument.
