@@ -1,6 +1,7 @@
 //Author: James Forbes - 2014 - MIT Licence
 function o(hash,changeCallback){
 
+	var rootCallbacks = [];
 	var callbacks = {};
 	var accessors = {};
 
@@ -22,20 +23,7 @@ function o(hash,changeCallback){
 		remove: [t.intro,t.reasons.existingFunction,t.reassurance],
 		change: [t.intro,t.reasons.existingFunction,t.reassurance]
 	}
-	/*
-		TODO
-
-		- Blacklist, no automatic function accessor for certain keys, have to use o('attr') syntax as opposed to
-		o.attr() syntax 
-		{
-			name: can't be used because of function.name is immutable,
-			remove: can't be used because it is already a method
-			change: ""
-		}
-
-		- Multiple change handlers
-	*/
-
+	
 	//route queries to setters//getters
 	var entry = function (key,value){
 		if(arguments.length != 0){
@@ -91,14 +79,17 @@ function o(hash,changeCallback){
 			var key = keys;
 			hash(key,null) //delete internal state
 			delete entry[key] //delete accessor function
-			delete callbacks[key] //delete callback
+			delete callbacks[key] //delete callbacks
 		}
 		return entry;
 	}
 
 	function changed(val,key){
-		changeCallback && changeCallback(val,key,hash())
-		callbacks[key] && callbacks[key](val,key,hash())
+		var fire = function(callback){
+			callback(val,key,hash())
+		}
+		each(rootCallbacks,fire)
+		callbacks[key] && each(callbacks[key],fire)
 		return entry;
 	}
 
@@ -121,8 +112,9 @@ function o(hash,changeCallback){
 	}
 
 	function acceptAttrChange(key){
-		return function(changeCallback){
-			callbacks[key] = changeCallback
+		return function(callback){
+			callbacks[key] = callbacks[key] || [] 
+			callbacks[key].push(callback)
 			return entry;
 		}
 	}
@@ -180,7 +172,7 @@ function o(hash,changeCallback){
 	}
 
 	entry.change = function(onchange){
-		changeCallback = onchange
+		rootCallbacks.push(onchange)
 		return entry;
 	}
 	
