@@ -58,16 +58,18 @@ var accessor = o(objectLiteral,[changeCallback])
 
 ###Object Access###
 
-o's cannot be mutated non-functionally.  But you can always access a shallow copy of it's current state.
+You cannot bypass the object accessors to mutate state.  This makes it impossible for a value to be changed without a change handler firing.  
+
+However you can always access a shallow copy of it's current state as a native object.
 
 ```javascript
-var accessor = o({name: 'Oscar', animal: 'giraffe'})
+var accessor = o({name: 'George', personality: 'curious'})
 
-accessor() //returns a shallow copy: {name: 'Oscar', animal: 'giraffe'}
+accessor() //returns a shallow copy: {name: 'George', personality: 'curious'}
 
-accessor().animal = 'Parrot' //this will not mutate the internal state
+accessor().personality = 'disinterested' //this will not mutate the internal state
 
-accessor().animal //returns 'giraffe'
+accessor().personality //returns 'curious'
 
 ```
 
