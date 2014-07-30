@@ -59,7 +59,7 @@ var accessor = o(objectLiteral,[changeCallback])
 ###Object Access###
 
 o's cannot be mutated non-functionally.  But you can always access a shallow copy of it's current state.
-w
+
 ```javascript
 var accessor = o({name: 'Oscar', animal: 'giraffe'})
 
