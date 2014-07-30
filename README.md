@@ -83,15 +83,14 @@ var greatescape = o({name: 'harry', type: 'tunnel'})
 
 //getter setters are automatically created!
 
-greatescape.name() //returns 'harry'
+greatescape('name') //returns 'harry'
 
-greatescape.name('tom') //sets harry's name to 'tom'
+greatescape('name','tom') //sets harry's name to 'tom'
 
 //optional syntax for getting / setting is equivalent
 greatescape('name') //returns 'tom'
 
-greatescape('name','dick') //sets name to dick
-
+greatescape('name','dick')() //sets name to dick
 ```
 
 ###Removing records###
