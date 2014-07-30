@@ -3,19 +3,45 @@ function o(hash,changeCallback){
 
 	var callbacks = {};
 
-		/*
-		close over hash, and replace with hash()
-		Only remove() and hash() can mutate hash.
-		Other functions have to go through hash()
-	*/
-	(function(original){
+	/*
+		TODO
 
-		hash = function(key,val){
+		- Blacklist, no automatic function accessor for certain keys, have to use o('attr') syntax as opposed to
+		o.attr() syntax 
+		{
+			name: can't be used because of function.name is immutable,
+			remove: can't be used because it is already a method
+			change: ""
+		}
+
+		- Multiple change handlers
+	*/
+
+	//route queries to setters//getters
+	var entry = function (key,value){
+		if(arguments.length != 0){
+			return entry[key](value)
+		}
+		return hash();
+	}
+
+	/*
+		close over hash, and replace with hash()
+		Only hash() can mutate hash.
+		Other functions (internal/external) have to go through hash()
+	*/
+	hash = (function(original){
+
+		return function(key,val){
 			if(arguments.length == 2){
-				if(!val){
+				if(typeof val == undefined){
 					delete original[key]
+					delete entry[key].change
 				} else {
-					original[key] = val	
+					
+					original[key] = val
+					entry[key] = createAccessor(key)
+					entry[key].change = acceptAttrChange(key)
 				}
 				return changed(val,key);
 			} else if (key) {
@@ -27,17 +53,8 @@ function o(hash,changeCallback){
 
 	})(hash || {})
 
-
-
-	//route queries to setters//getters
-	function entry(key,value){
-		if(arguments.length != 0){
-			return entry[key](value)
-		}
-		return hash();
-	}
-
 	entry.remove = function(keys){
+		//Handle varargs and array as arguments
 		if(arguments.length > 1){
 		  keys = ([]).slice.call(arguments);
 		}
@@ -47,7 +64,7 @@ function o(hash,changeCallback){
 			})
 		} else {
 			var key = keys;
-			delete hash(key,null) //delete internal state
+			hash(key,null) //delete internal state
 			delete entry[key] //delete accessor function
 			delete callbacks[key] //delete callback
 		}
@@ -73,11 +90,7 @@ function o(hash,changeCallback){
 	function set(key,val){
   		//set value
   		hash(key,val)
-  		//call change callback
   		//create setter
-  		entry[key] = createAccessor(key)
-  		entry[key].change = acceptAttrChange(key)
-  		callbacks[key] && callbacks[key](val,key,hash())
   		return entry;
 	}
 
