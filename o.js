@@ -3,47 +3,21 @@ function o(hash,changeCallback){
 
 	var callbacks = {};
 
-	//route queries to setters//getters
-	function entry(key,value){
-		if(key && value){
-			return set(key,value)
-		} else if(key) {
-			return hash(key)
-		}
-		return hash();
-	}
-
-	/*
+		/*
 		close over hash, and replace with hash()
 		Only remove() and hash() can mutate hash.
 		Other functions have to go through hash()
 	*/
-
 	(function(original){
 
-		entry.remove = function(keys){
-			if(arguments.length > 1){
-			  keys = ([]).slice.call(arguments);
-			}
-			if(Array.isArray(keys)){
-				for(var i =0; i< keys.length; i++){
-					entry.remove(keys[i])
-				}
-			} else {
-				var key = keys;
-				delete original[key]
-				delete entry[key]
-				changeCallback && changeCallback(null,key,hash())
-				callbacks[key] && callbacks[key](val,key,hash())
-				delete callbacks[key]
-			}
-			return entry;
-		}
-
-
 		hash = function(key,val){
-			if(key && val){
-				return original[key] = val
+			if(arguments.length == 2){
+				if(!val){
+					delete original[key]
+				} else {
+					original[key] = val	
+				}
+				return changed(val,key);
 			} else if (key) {
 				return original[key]
 			} else {
@@ -55,11 +29,42 @@ function o(hash,changeCallback){
 
 
 
+	//route queries to setters//getters
+	function entry(key,value){
+		if(arguments.length != 0){
+			return entry[key](value)
+		}
+		return hash();
+	}
+
+	entry.remove = function(keys){
+		if(arguments.length > 1){
+		  keys = ([]).slice.call(arguments);
+		}
+		if(Array.isArray(keys)){
+			each(keys,function(key){
+				entry.remove(key)
+			})
+		} else {
+			var key = keys;
+			delete hash(key,null) //delete internal state
+			delete entry[key] //delete accessor function
+			delete callbacks[key] //delete callback
+		}
+		return entry;
+	}
+
+	function changed(val,key){
+		changeCallback && changeCallback(val,key,hash())
+		callbacks[key] && callbacks[key](val,key,hash())
+	}
+
+
 	//return a copy of a hash
 	function copy(obj){
 		var copied = {};
 		each(obj,function(val,key){
-			copied[key] = val;
+		copied[key] = val;
 		});
 		return copied;
 	}
@@ -69,7 +74,6 @@ function o(hash,changeCallback){
   		//set value
   		hash(key,val)
   		//call change callback
-  		changeCallback && changeCallback(val,key,hash())
   		//create setter
   		entry[key] = createAccessor(key)
   		entry[key].change = acceptAttrChange(key)
@@ -85,9 +89,17 @@ function o(hash,changeCallback){
 
 	//iterate through an object
 	function each(obj,iterator){
-		for(var k in obj){
-			var v = obj[k];
-			iterator(v,k)
+	
+		if(isArray(obj)){
+
+			for(var i = 0; i< obj.length; i++){
+				iterator(obj[i],i)
+			}	
+		} else {
+			for(var k in obj){
+				var v = obj[k];
+				iterator(v,k)
+			}
 		}
 	}
 
@@ -98,7 +110,7 @@ function o(hash,changeCallback){
 	//creates an attribute getter/setter
 	function createAccessor(key){
 	  return function(val){
-	  	if(val){
+	  	if(typeof val != 'undefined'){
 	  		return set(key,val)
 	  	}
       	return hash(key)
