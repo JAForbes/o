@@ -99,6 +99,7 @@ function o(hash,changeCallback){
 	function changed(val,key){
 		changeCallback && changeCallback(val,key,hash())
 		callbacks[key] && callbacks[key](val,key,hash())
+		return entry;
 	}
 
 
@@ -122,6 +123,7 @@ function o(hash,changeCallback){
 	function acceptAttrChange(key){
 		return function(changeCallback){
 			callbacks[key] = changeCallback
+			return entry;
 		}
 	}
 
