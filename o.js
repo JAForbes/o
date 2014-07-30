@@ -27,7 +27,7 @@ function o(hash,changeCallback){
 	//route queries to setters//getters
 	var entry = function (key,value){
 		if(arguments.length != 0){
-			return hash(key,value)
+			return hash.apply(null,arguments)
 		}
 		return hash();
 	}
@@ -155,11 +155,11 @@ function o(hash,changeCallback){
 	}
 
 	function automaticFunctionGen(key,accessor){
+	
+		entry[key] = accessor
+		entry[key].change = acceptAttrChange(key)
 
-		if(!(key in warnings)){ 
-			entry[key] = accessor
-			entry[key].change = acceptAttrChange(key)
-		} else {
+		if(key in warnings){ 
 			warn(key)
 		}
 	}
