@@ -164,3 +164,6 @@ bobDylan = o({times:'stagnant'},function(val,key,hash){
 })
 
 ```
+
+You can register as many handlers as you want.  Attribute handlers are dereferenced when the record is removed.  Global
+handlers persist  Use responsibly.
