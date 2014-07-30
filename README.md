@@ -10,51 +10,37 @@ Object literals are great!  They are succinct and readable.  But they have one m
 
 This may not be a problem if you are using a library like BackboneJS, but if you don't want the overhead - o is for you.
 
-What?
+Quick Start?
 -----
 
-o has all the functionality of an object literal but with extra magic powers.
+o has all the functionality of an object literal but with extra magic powers:
+
+- Convenient concise chaining syntax
+- Change handlers
+- Inaccessible internal state
 
 ```javascript
 
-person = o({
-  first: 'James',
-  last: 'Forbes'
+life = o({
+  age: 'young',
+  innocence: true
 })
 
-person() //returns a shallow copy of person { first: 'James', last: 'Forbes' }
-
-person.first() //returns 'James'
-
-person.last('Black') //sets person.last to 'Black'
-
-//callback function when a change occurs
-person.change(function(val,key,hash){
-  console.log('I feel good!')
+life.change(function(val,key,hash){
+  console.log('My life has changed')
 })
 
-//callback functions for individual attributes
-person.first.change(function(val,key,hash){
-  console.log('My first name changed to',val)
+life.age.change(function(val,key,hash){
+  console.log('Happy Birthday!')
 })
 
-//add a record
-person('middle','Anthony')
+life
+  .age('older')
+  ('experiences',true)
+  .remove('innocence')
 
-person.middle() //returns 'Anthony'
 
-person('middle') //returns 'Anthony' too!
-
-person.remove('middle') //deletes the record and the accessor function
-
-person.remove(['middle','last']) //accepts multiple keys
-
-//You can chain too
-person
-  .first('James')
-  .middle('Anthony')
-  .last('Forbes')
-()
+life() // returns {age: 'older', experiences: true }
 
 ```
 
@@ -73,11 +59,11 @@ var accessor = o(objectLiteral,[changeCallback])
 ###Object Access###
 
 o's cannot be mutated non-functionally.  But you can always access a shallow copy of it's current state.
-
+w
 ```javascript
 var accessor = o({name: 'Oscar', animal: 'giraffe'})
 
-accessor() //rteturns a shallow copy: {name: 'Oscar', animal: 'giraffe'}
+accessor() //returns a shallow copy: {name: 'Oscar', animal: 'giraffe'}
 
 accessor().animal = 'Parrot' //this will not mutate the internal state
 
@@ -110,6 +96,7 @@ greatescape('name','dick') //sets name to dick
 
 The remove function is accessible from the root accessor.  It accepts variable arguments or an array.
 
+```javascript
 witch = o()
   ('personality','wicked')
   ('occupation','witch')
@@ -119,8 +106,10 @@ witch.remove('personality')
 
 witch.remove('occupation','province')
 
-// which is equivalent to
+//the above is equivalent to
+
 witch.remove(['occupation','province'])
+```
 
 ###Function Chaining###
 
