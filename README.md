@@ -83,15 +83,14 @@ var greatescape = o({name: 'harry', type: 'tunnel'})
 
 //getter setters are automatically created!
 
-greatescape.name() //returns 'harry'
+greatescape('name') //returns 'harry'
 
-greatescape.name('tom') //sets harry's name to 'tom'
+greatescape('name','tom') //sets harry's name to 'tom'
 
 //optional syntax for getting / setting is equivalent
 greatescape('name') //returns 'tom'
 
-greatescape('name','dick') //sets name to dick
-
+greatescape('name','dick')() //sets name to dick
 ```
 
 ###Removing records###
@@ -100,6 +99,9 @@ The remove function is accessible from the root accessor.  It accepts variable a
 
 ```javascript
 witch = o()
+  .change(function(){
+    console.log("I'm melting!")
+  })
   ('personality','wicked')
   ('occupation','witch')
   ('province','west')
@@ -138,19 +140,19 @@ person
 You can attach change callbacks to the root accessor `accessor.change(callback)` or attribute accessors`accessor.attr.change(callback)`.  You will be notified whenever the selected scope changes.
 
 ```javascript
-
 alice = o()
   ('location','wonderland')
   ('head','attached')
   .change(function(val,key,hash){
-    console.log('My ',key,' has changed to',val)
+    console.log('My',key,'has changed to',val)
   })
   .head.change(function(val,key,hash){
-    console.log('My head has changed to',val)
+     if(val==null){
+       console.log('Oh no! My head is gone!')
+     }
   })
   .location('The Queen\'s Court') //triggers only the root change callback
   .remove('head') //triggers the head change and the change callback
-
 ```
 
 You can also attach a change handler on initialization as a second argument.
@@ -162,3 +164,6 @@ bobDylan = o({times:'stagnant'},function(val,key,hash){
 })
 
 ```
+
+You can register as many handlers as you want.  Attribute handlers are dereferenced when the record is removed.  Global
+handlers persist  Use responsibly.
