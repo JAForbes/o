@@ -99,6 +99,9 @@ The remove function is accessible from the root accessor.  It accepts variable a
 
 ```javascript
 witch = o()
+  .change(function(){
+    console.log("I'm melting!")
+  })
   ('personality','wicked')
   ('occupation','witch')
   ('province','west')
