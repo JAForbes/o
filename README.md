@@ -10,7 +10,7 @@ Object literals are great!  They are succinct and readable.  But they have one m
 
 This may not be a problem if you are using a library like BackboneJS, but if you don't want the overhead - o is for you.
 
-Quick Start?
+Quick Start
 -----
 
 o has all the functionality of an object literal but with extra magic powers:
@@ -167,3 +167,40 @@ bobDylan = o({times:'stagnant'},function(val,key,hash){
 
 You can register as many handlers as you want.  Attribute handlers are dereferenced when the record is removed.  Global
 handlers persist  Use responsibly.
+
+###Nested o's###
+
+You can nest o's too. 
+
+```javascript
+parent = o()
+
+parent
+  ('child',o())
+  ('child')
+  ('grandchild',o())
+    ('grandchild')
+    ('greatgrandchild',o())
+
+parent.child.grandchild.greatgrandchild('a',4)
+parent('child')('grandchild')('greatgrandchild')('a') //returns 4
+
+```
+
+After a few layers it can get a bit unwieldy, but that is fine - just store a reference.
+
+```
+
+//store reference
+greatgrandchild = parent.child.grandchild.greatgrandchild
+
+//assign value
+greatgrandchild('a',5)
+
+//equivalent
+parent.child.grandchild.greatgrandchild.a() //returns 5
+
+```
+
+Keep in mind that parent.remove() will not delete a child, just detached the reference.
+So if you have a lot of references lying around, gargbage collection might not kick in.
