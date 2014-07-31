@@ -10,7 +10,7 @@ Object literals are great!  They are succinct and readable.  But they have one m
 
 This may not be a problem if you are using a library like BackboneJS, but if you don't want the overhead - o is for you.
 
-Quick Start?
+Quick Start
 -----
 
 o has all the functionality of an object literal but with extra magic powers:
