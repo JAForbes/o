@@ -134,4 +134,28 @@ describe("The Functional Object Literal", function() {
     expect(result).toEqual(4)
 
   })
+
+  it('change handlers work for neeted o\'s',function(){
+    var called = 0;
+    parent = o()
+
+    parent
+      ('child',o())
+      ('child')
+        ('grandchild',o())
+        ('grandchild')
+          ('greatgrandchild',o())
+
+    
+    parent('child')('grandchild')('greatgrandchild')('a',0)
+    parent('child')('grandchild')('greatgrandchild').a.change(function(){
+      called++;
+    })
+    parent.child.grandchild.greatgrandchild('a',1)
+    parent.child.grandchild.greatgrandchild('a',2)
+
+    expect(called).toEqual(2)
+    
+
+  })
 });

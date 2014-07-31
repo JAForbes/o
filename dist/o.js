@@ -52,7 +52,7 @@ function o(hash,changeCallback){
 		}
 
 		function getAll(){
-			return copy(original)
+			return toJSON(original)
 		}
 
 		function getVal(key){
@@ -108,22 +108,29 @@ function o(hash,changeCallback){
 		return entry;
 	}
 
-
-	//return a copy of a hash
-	function copy(obj){
-		var copied = {};
-		each(obj,function(val,key){
-		copied[key] = val;
-		});
-		return copied;
-	}
-
 	//set a val in the hash, trigger change and create a getter/setter
 	function set(key,val){
   		//set value
   		hash(key,val)
   		//create setter
   		return entry;
+	}
+
+	//Converts nested o's into plain objects.
+	//Inspired by Backbone model.toJSON
+	function toJSON(original,json){
+	  json = json || {}
+	  each(original,function(val,key){
+
+	    if(key != 'remove' || key != 'change') {
+	    
+	    	if(val.name == 'o'){
+		      val = toJSON(val())
+		    }
+		    json[key] = val
+	    }
+	  })
+	  return json
 	}
 
 	
@@ -174,8 +181,10 @@ function o(hash,changeCallback){
 		var val = hash(key);
 		var accessor;
 		if(val.name == 'o'){
-			
 			accessor = val;
+			val.change(function(val,key){
+				changed(val,key)
+			})
 		} else {
 		
 			accessor = function(newVal){
@@ -200,7 +209,7 @@ function o(hash,changeCallback){
 	function automaticFunctionGen(key,accessor){
 	
 		entry[key] = accessor
-		entry[key].change = changeEntry(key)
+		entry[key].change = entry[key].change || changeEntry(key)
 
 		if(key in warnings){ 
 			warn(key)
