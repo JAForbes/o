@@ -118,4 +118,20 @@ describe("The Functional Object Literal", function() {
     expect(head).toEqual(2)
   })
 
+  it('can handle nested o\'s with multiple syntaxes',function(){
+    parent = o()
+
+    parent
+      ('child',o())
+      ('child')
+        ('grandchild',o())
+        ('grandchild')
+          ('greatgrandchild',o())
+
+    parent.child.grandchild.greatgrandchild('a',4)
+    var result = parent('child')('grandchild')('greatgrandchild')('a')
+
+    expect(result).toEqual(4)
+
+  })
 });

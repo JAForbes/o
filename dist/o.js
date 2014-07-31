@@ -25,7 +25,7 @@ function o(hash,changeCallback){
 	}
 	
 	//route queries to setters//getters
-	var entry = function (key,value){
+	var entry = function o(key,value){
 		if(arguments.length != 0){
 			return hash.apply(null,arguments)
 		}
@@ -39,29 +39,44 @@ function o(hash,changeCallback){
 	*/
 	hash = (function(original){
 
-		return function(key,val){
+		function hash(key,val){
+			var response;
 			if(arguments.length == 2){
-				var valtype = type(val);
-				var hasChanged = val != original[key]
-
-				if(/Undefined|Null/.test(valtype)){
-					
-					delete original[key]
-					delete accessors[key]
-					if(entry[key]){ delete entry[key].change }
-
-				} else {
-					
-					original[key] = val
-					accessors[key] = accessors[key] || createAccessor(key)
-				}
-				return hasChanged && changed(val,key) || entry;
+				response = set(key,val)		
 			} else if (key) {
-				return original[key]
+				response = getVal(key)
 			} else {
-				return copy(original)
+				response = getAll()
 			}
+			return response;
 		}
+
+		function getAll(){
+			return copy(original)
+		}
+
+		function getVal(key){
+			return original[key]
+		}
+
+		function set(key,val){
+			var valtype = type(val);
+			var hasChanged = val != original[key]
+
+			if(/Undefined|Null/.test(valtype)){
+				
+				delete original[key]
+				delete accessors[key]
+				if(entry[key]){ delete entry[key].change }
+
+			} else {
+				original[key] = val
+				accessors[key] = accessors[key] || createAccessor(key)
+			}
+			return hasChanged && changed(val,key) || entry;
+		}
+
+		return hash;
 
 	})(hash || {})
 
@@ -111,7 +126,17 @@ function o(hash,changeCallback){
   		return entry;
 	}
 
-	function acceptAttrChange(key){
+	
+	/*
+		Accept change handlers on the root object
+	*/
+	entry.change = function(onchange){
+		rootCallbacks.push(onchange)
+		return entry;
+	}
+
+	//Create function that will accept change callbacks for attributes e.g. o.attribute.change(callback)
+	function changeEntry(key){
 		return function(callback){
 			callbacks[key] = callbacks[key] || [] 
 			callbacks[key].push(callback)
@@ -138,42 +163,58 @@ function o(hash,changeCallback){
 		return !!array.concat
 	}
 
+	//returns "Array", "Number", "Object", "Function", "Null", "Undefined"
 	function type(o){
 		return ({}).toString.call(o).slice(8,-1)
 	}
 
 	//creates an attribute getter/setter
 	function createAccessor(key){
-		var accessor = function(val){
-			if(type(val) != 'Undefined'){
-				return set(key,val)
+		
+		var val = hash(key);
+		var accessor;
+		if(val.name == 'o'){
+			
+			accessor = val;
+		} else {
+		
+			accessor = function(newVal){
+				
+				if(type(newVal) != 'Undefined'){ //setter
+					
+					return set(key,newVal) 
+				}
+				return hash(key) //getter
 			}
-			return hash(key)
 		}
 		automaticFunctionGen(key,accessor)
 		return accessor;
 	}
 
+	/*
+		Generates functions with the same name as an attribute.
+
+		Note: won't generate if the key is in the warnings key.
+		But you can still access via the query syntax e.g. o('attributeName')
+	*/
 	function automaticFunctionGen(key,accessor){
 	
 		entry[key] = accessor
-		entry[key].change = acceptAttrChange(key)
+		entry[key].change = changeEntry(key)
 
 		if(key in warnings){ 
 			warn(key)
 		}
 	}
 
+	/*
+		Log a warning based on the warnings template for that key.
+	*/
 	function warn(key){
 		var warning = warnings[key]
 			.join('\n\n')
 			.replace(t.pattern,key)
 		console.warn(warning)
-	}
-
-	entry.change = function(onchange){
-		rootCallbacks.push(onchange)
-		return entry;
 	}
 	
 	each(hash(),function(val,key){
