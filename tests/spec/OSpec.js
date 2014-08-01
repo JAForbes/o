@@ -135,7 +135,7 @@ describe("The Functional Object Literal", function() {
 
   })
 
-  it('change handlers work for neeted o\'s',function(){
+  it('change handlers work for nested o\'s',function(){
     var called = 0;
     parent = o()
 

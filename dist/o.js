@@ -4,25 +4,6 @@ function o(hash,changeCallback){
 	var rootCallbacks = [];
 	var callbacks = {};
 	var accessors = {};
-
-	var t =  {
-		intro: 'You will not be able to use the automatic function syntax e.g. o.____() to access a record with the key "____".',
-		reasons: {
-			existingFunction: 'There is already a ____() function, and o wouldn\'t know your intentions.',
-			nameReadOnly: 'The accessor is a function and you cannot override function.name in Javascript.',
-		},
-		disadvantages: {
-			nameReadOnly: 'Be aware, you will not be able to use a change listener for this attribute, as '+
-			  'the name property is a string, and strings cannot have custom properties in Javascript'
-		},
-		reassurance: 'Feel free to use the query syntax e.g. o("____") though!',
-		pattern: /____/g
-	}
-	var warnings = {
-		name: [t.intro,t.reasons.nameReadOnly,t.reassurance,t.disadvantages.nameReadOnly],
-		remove: [t.intro,t.reasons.existingFunction,t.reassurance],
-		change: [t.intro,t.reasons.existingFunction,t.reassurance]
-	}
 	
 	//route queries to setters//getters
 	var entry = function o(key,value){
@@ -39,6 +20,7 @@ function o(hash,changeCallback){
 	*/
 	hash = (function(original){
 
+		//This function will become available internally to other functions.
 		function hash(key,val){
 			var response;
 			if(arguments.length == 2){
@@ -63,6 +45,10 @@ function o(hash,changeCallback){
 			var valtype = type(val);
 			var hasChanged = val != original[key]
 
+			/*
+				Internally, setting a value to null or undefined 
+				Is a signal to delete the key
+			*/
 			if(/Undefined|Null/.test(valtype)){
 				
 				delete original[key]
@@ -76,9 +62,10 @@ function o(hash,changeCallback){
 			return hasChanged && changed(val,key) || entry;
 		}
 
+		//Give internal access to hash function
 		return hash;
 
-	})(hash || {})
+	})(hash || {}) //pass original hash, create if not defined
 
 	entry.remove = function(keys){
 		//Handle varargs and array as arguments
@@ -214,6 +201,25 @@ function o(hash,changeCallback){
 		if(key in warnings){ 
 			warn(key)
 		}
+	}
+
+	var t =  {
+		intro: 'You will not be able to use the automatic function syntax e.g. o.____() to access a record with the key "____".',
+		reasons: {
+			existingFunction: 'There is already a ____() function, and o wouldn\'t know your intentions.',
+			nameReadOnly: 'The accessor is a function and you cannot override function.name in Javascript.',
+		},
+		disadvantages: {
+			nameReadOnly: 'Be aware, you will not be able to use a change listener for this attribute, as '+
+			  'the name property is a string, and strings cannot have custom properties in Javascript'
+		},
+		reassurance: 'Feel free to use the query syntax e.g. o("____") though!',
+		pattern: /____/g
+	}
+	var warnings = {
+		name: [t.intro,t.reasons.nameReadOnly,t.reassurance,t.disadvantages.nameReadOnly],
+		remove: [t.intro,t.reasons.existingFunction,t.reassurance],
+		change: [t.intro,t.reasons.existingFunction,t.reassurance]
 	}
 
 	/*
